@@ -4,7 +4,7 @@ import torch
 import sys
 import pickle as pkl
 import networkx as nx
-from normalization import fetch_normalization, row_normalize
+from .normalization import fetch_normalization, row_normalize
 from time import perf_counter
 
 def parse_index_file(filename):
@@ -14,10 +14,10 @@ def parse_index_file(filename):
         index.append(int(line.strip()))
     return index
 
-def preprocess_citation(adj, features, normalization="FirstOrderGCN"):
+def preprocess_citation(adj, features, normalization="AugNormAdj"):
     adj_normalizer = fetch_normalization(normalization)
     adj = adj_normalizer(adj)
-    features = row_normalize(features)
+    #features = row_normalize(features)
     return adj, features
 
 def sparse_mx_to_torch_sparse_tensor(sparse_mx):
@@ -36,14 +36,14 @@ def load_citation(dataset_str="cora", normalization="AugNormAdj", cuda=True):
     names = ['x', 'y', 'tx', 'ty', 'allx', 'ally', 'graph']
     objects = []
     for i in range(len(names)):
-        with open("data/ind.{}.{}".format(dataset_str.lower(), names[i]), 'rb') as f:
+        with open("SGC/data/ind.{}.{}".format(dataset_str.lower(), names[i]), 'rb') as f:
             if sys.version_info > (3, 0):
                 objects.append(pkl.load(f, encoding='latin1'))
             else:
                 objects.append(pkl.load(f))
 
     x, y, tx, ty, allx, ally, graph = tuple(objects)
-    test_idx_reorder = parse_index_file("data/ind.{}.test.index".format(dataset_str))
+    test_idx_reorder = parse_index_file("SGC/data/ind.{}.test.index".format(dataset_str))
     test_idx_range = np.sort(test_idx_reorder)
 
     if dataset_str == 'citeseer':
